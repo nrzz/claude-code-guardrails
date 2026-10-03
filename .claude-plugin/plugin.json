@@ -1,0 +1,10 @@
+{
+  "name": "guardrails",
+  "version": "1.0.0",
+  "description": "Safety presets for Claude Code: risky shell commands and file edits are denied or turned into a permission prompt, everything else passes silently and costs no tokens.",
+  "author": { "name": "Naresh Prabu" },
+  "homepage": "https://github.com/nrzz/claude-code-guardrails",
+  "repository": "https://github.com/nrzz/claude-code-guardrails",
+  "license": "MIT",
+  "keywords": ["safety", "guardrails", "hooks", "permissions", "security", "git", "tokens"]
+}

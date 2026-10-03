@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "claude-code-guardrails",
+  "description": "Safety presets for Claude Code: a PreToolUse hook that denies or asks before risky shell commands and file edits, and costs no tokens when it has nothing to say.",
+  "owner": {
+    "name": "Naresh Prabu"
+  },
+  "plugins": [
+    {
+      "name": "guardrails",
+      "description": "Blocks rm -rf on a root or home folder, force pushes to protected branches, secrets in commits and .env edits, and asks before resets, publishes, destroys and curl | sh. Three presets (strict, balanced, relaxed); zero tokens for every allowed call.",
+      "author": { "name": "Naresh Prabu" },
+      "category": "security",
+      "source": "./",
+      "homepage": "https://github.com/nrzz/claude-code-guardrails"
+    }
+  ]
+}

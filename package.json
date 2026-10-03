@@ -1,0 +1,42 @@
+{
+  "name": "claude-code-guardrails",
+  "version": "1.0.0",
+  "description": "Safety presets for Claude Code: risky shell commands and file edits are denied or turned into a permission prompt, everything else passes silently and costs no tokens.",
+  "type": "module",
+  "bin": {
+    "claude-guardrails": "bin/claude-guardrails.mjs"
+  },
+  "files": [
+    "guard.mjs",
+    "bin",
+    "src",
+    "hooks",
+    "skills",
+    ".claude-plugin",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "repository": "github:nrzz/claude-code-guardrails",
+  "homepage": "https://github.com/nrzz/claude-code-guardrails#readme",
+  "bugs": "https://github.com/nrzz/claude-code-guardrails/issues",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "anthropic",
+    "guardrails",
+    "safety",
+    "hooks",
+    "pretooluse",
+    "permissions",
+    "security",
+    "tokens"
+  ],
+  "author": "Naresh Prabu",
+  "license": "MIT"
+}
