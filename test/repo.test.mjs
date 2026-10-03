@@ -190,8 +190,8 @@ const readme = read("README.md");
 
 test("README: the template's sections, in order, with the badge and the install routes", () => {
   const headings = lines(readme).filter((l) => /^## /.test(l));
-  assert.deepEqual(headings, ["## What it costs in tokens", "## Install", "## Use", "## Settings", "## How it works", "## What was verified, and how", "## Files", "## License"]);
-  assert.match(readme, /^# Claude Code guardrails\n\n\[!\[test\]\(https:\/\/github\.com\/nrzz\/claude-code-guardrails\/actions\/workflows\/test\.yml\/badge\.svg\)\]\(https:\/\/github\.com\/nrzz\/claude-code-guardrails\/actions\/workflows\/test\.yml\)\n/);
+  assert.deepEqual(headings, ["## What it costs in tokens", "## Install", "## Use", "## Settings", "## How it works", "## What was verified, and how", "## Files", "## Contributing", "## Part of the Claude Code toolkit", "## License"]);
+  assert.match(readme, /^# Claude Code guardrails\n\n\[!\[test\]\(https:\/\/github\.com\/nrzz\/claude-code-guardrails\/actions\/workflows\/test\.yml\/badge\.svg\)\]\(https:\/\/github\.com\/nrzz\/claude-code-guardrails\/actions\/workflows\/test\.yml\)[^\n]*\n/);
   assert.ok(readme.includes("npx -y github:nrzz/claude-code-guardrails init"));
   assert.ok(readme.includes("/plugin marketplace add nrzz/claude-code-guardrails"));
   assert.ok(readme.includes("/plugin install guardrails@claude-code-guardrails"));
