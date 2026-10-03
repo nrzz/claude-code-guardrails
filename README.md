@@ -271,7 +271,7 @@ If the hook itself fails, the call goes through; that is the price of never gett
 
 ## What was verified, and how
 
-Checked on 2026-10-04 on Windows 11 with Node 24 and git 2.55, and in CI on Windows, macOS and Linux with Node 20, 22 and 24 once the repository is on GitHub:
+Checked on 2026-10-04 on Windows 11 with Node 24 and git 2.55, and in CI on Windows, macOS and Linux with Node 20, 22 and 24, all green:
 
 - **981 automated tests** (`npm test`, Node's own runner, no dependencies). A table of 663 commands with the expected decision in each preset covers every rule and the tricky spellings: quoted text, `rm -rf ./build` and `node_modules`, nested `bash -c`, `sudo`/`env`/`nohup` prefixes, PowerShell and `cmd /c` spellings, `git push origin +main`, SQL in here-documents, `curl | sudo bash -`, here-strings, where a `cd` lasts, and command substitution inside unquoted here-documents. A second table does the same for about 150 file paths, Linux, macOS and Windows style (the checks are pure functions of a described machine, so every platform's paths are tested everywhere). A deterministic fuzz test makes 18,000 checks of random command lines and 16,000 of random paths: the engine must never throw and must always answer in the same short form.
 - **Real git.** Force pushes are judged by the branch a throwaway repository is really on (main, a feature branch, a detached head, no repository); the commit scan runs against staged fake keys of every kind, staged `.env` files, `commit -a`, `git add -A && git commit`, untracked files, deleted `.env`, placeholders and large or binary files, and the tests count the git processes that get started (none for anything but those cases).
