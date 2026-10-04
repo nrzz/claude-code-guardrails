@@ -5,6 +5,10 @@
   "author": { "name": "Naresh Prabu" },
   "homepage": "https://github.com/nrzz/claude-code-guardrails",
   "repository": "https://github.com/nrzz/claude-code-guardrails",
+  "documentationUrl": "https://github.com/nrzz/claude-code-guardrails#readme",
+  "supportUrl": "https://github.com/nrzz/claude-code-guardrails/issues",
+  "privacyPolicyUrl": "https://github.com/nrzz/claude-code-guardrails#privacy",
+  "termsOfServiceUrl": "https://github.com/nrzz/claude-code-guardrails/blob/main/LICENSE",
   "license": "MIT",
   "keywords": ["safety", "guardrails", "hooks", "permissions", "security", "git", "tokens"]
 }
