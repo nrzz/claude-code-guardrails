@@ -13,11 +13,11 @@ Nothing, unless it stops something, and then only the reason:
 | Part | Tokens | |
 | --- | --- | --- |
 | Every allowed call (almost all of them) | 0 | The hook prints nothing at all: Claude sees nothing, you see nothing, and Claude Code's own permission prompts stay in charge |
-| A denied call | about 45 | The reason Claude reads: 130 to 230 characters, one line. It usually saves a failed or destructive turn |
+| A denied call | about 45 | The reason Claude reads: one line of about 150 to 250 characters (up to about 300 for a very long file name). It usually saves a failed or destructive turn |
 | An `ask` | 0 extra | Claude Code shows its normal permission prompt with the reason, to you. Claude only learns your answer |
 | Skills in Claude's skill list | 0 | The two skills (`/guardrails:allow`, `/guardrails:status`) are user-only (`disable-model-invocation`), so Claude Code leaves them out of the list it gives the model. One short turn when you use one |
 | `claude-guardrails ...` in a terminal | 0 | |
-| Time per call | about 65 ms | Starting Node is almost all of it; the checks themselves take about 25 microseconds. 1000 checks run in about 25 ms |
+| Time per call | about 70 ms | Starting Node is almost all of it; the checks themselves take about 25 microseconds. 1000 checks run in about 25 ms |
 
 ## Install
 
@@ -28,7 +28,7 @@ Nothing, unless it stops something, and then only the reason:
 /plugin install guardrails@claude-code-guardrails
 ```
 
-Start a new session and the hook is active with the `balanced` preset. To change the preset or allow a rule, use `/guardrails:allow <rule-id>`, or write a `guardrails.json` (see [Settings](#settings)).
+Start a new session and the hook is active with the `balanced` preset. To allow a rule, use `/guardrails:allow <rule-id>`; to change the preset, run `claude-guardrails preset <name>` in a terminal or write a `guardrails.json` (see [Settings](#settings)).
 
 **From a terminal**, with Node 18 or newer:
 
@@ -59,7 +59,7 @@ You do not run anything. Claude Code asks the hook before every `Bash`, `PowerSh
 guardrails: force push to, or deletion of, a protected branch [main] (rule git-force-push-protected). If this is intended, ask the user to allow it: claude-guardrails allow git-force-push-protected
 ```
 
-If it was intended, you run that command (in your terminal, or `/guardrails:allow git-force-push-protected` in Claude Code) and the rule is off for the project. Claude cannot do it for you: running `claude-guardrails allow` or editing the guard's own files is itself a rule (`guardrails-tamper`) that asks you first.
+If it was intended, you run that command (in your terminal, or `/guardrails:allow git-force-push-protected` in Claude Code) and the rule is off for the project. Claude cannot do it for you: running `claude-guardrails allow` or editing the guard's own files is itself a rule (`guardrails-tamper`) that asks you first (in `strict` it denies).
 
 Try a command without running it:
 
@@ -80,7 +80,7 @@ deny  secret-file-write  (preset balanced)
 
 | Preset | For | Compared with `balanced` |
 | --- | --- | --- |
-| `strict` | An agent nobody watches, or a team that wants every risky step to be a decision | Denies what balanced asks about: deleting outside the project, SQL drops, infrastructure destroys, lockfile edits, reads of secrets files and writes outside the project. Asks before a direct push to a protected branch and before editing a CI workflow |
+| `strict` | An agent nobody watches, or a team that wants every risky step to be a decision | Denies what balanced asks about: deleting outside the project or a `.git` folder, SQL drops, infrastructure destroys, lockfile edits, reads of secrets files, writes outside the project and changes to the guard itself. Asks before a direct push to a protected branch and before editing a CI workflow |
 | `balanced` (default) | Working with Claude at the keyboard | Asks before the risky things that are sometimes wanted (`git reset --hard`, deleting outside the project, publishing, `curl \| sh`, destroying infrastructure) and denies the ones that never are |
 | `relaxed` | You want a net under the disasters and no more prompts than that | Allows resets, cleans, stash drops, branch deletes, force pushes to unprotected branches, publishes, `curl \| sh`, deletes outside the project, lockfile edits and reads of secrets files. Still asks for SQL drops, infrastructure destroys, writes outside the project and deleting a `.git` folder |
 
@@ -145,7 +145,7 @@ Only when the SQL is handed to a database client (`psql`, `mysql`, `sqlite3`, `s
 | --- | --- | --- | --- | --- |
 | `publish` | ask | ask | allow | publishes a package, release or image (npm, cargo, twine, gh release, docker push ...) |
 
-`npm`, `pnpm`, `yarn npm`, `bun`, `lerna`, `cargo`, `dotnet nuget push`, `twine upload`, `poetry`, `uv`, `gem push`, `gh release create`, `docker push` and `docker buildx build --push`. `--dry-run` is allowed.
+`npm`, `pnpm`, `yarn npm`, `bun`, `lerna`, `changeset publish`, `cargo`, `dotnet nuget push`, `twine upload`, `poetry`, `uv`, `flit`, `hatch`, `vsce`, `ovsx`, `gem push`, `gh release create`, `docker push`, `podman push`, `docker compose push` and `docker buildx build --push`. `--dry-run` is allowed for the tools that have one (npm, pnpm, yarn, bun, lerna, cargo, poetry, uv, flit, hatch, vsce, ovsx).
 
 #### Infrastructure
 
@@ -155,10 +155,12 @@ Only when the SQL is handed to a database client (`psql`, `mysql`, `sqlite3`, `s
 | `terraform-auto-approve` | deny | ask | ask | terraform apply -auto-approve changes infrastructure without a review |
 | `kubectl-delete` | deny | ask | ask | deletes Kubernetes resources |
 | `helm-uninstall` | deny | ask | ask | uninstalls a Helm release |
-| `docker-prune` | deny | ask | ask | removes unused Docker images, containers or volumes (prune, compose down -v) |
-| `aws-destroy` | deny | ask | ask | deletes AWS resources (s3 rm --recursive, s3 rb, terminate, delete-*) |
+| `docker-prune` | deny | ask | ask | removes Docker volumes or every unused image (prune -a or --volumes, volume prune, compose down -v) |
+| `aws-destroy` | deny | ask | ask | deletes AWS resources (s3 rm --recursive, s3 rb, terminate-instances, delete-stack, delete-db-instance ...) |
 | `gcloud-delete` | deny | ask | ask | deletes Google Cloud resources |
 | `az-delete` | deny | ask | ask | deletes Azure resources |
+
+`docker-prune` covers `system prune` or `image prune` with `-a`, `--all` or `--volumes`, `volume prune` and `compose down -v`. A plain `docker system prune` or `container prune`, which removes only stopped containers and dangling images, is allowed. `aws-destroy` covers `s3 rm --recursive`, `s3 rb`, `terminate-instances`, and `delete-` calls for stacks, stack sets, DB instances and clusters, tables, buckets, clusters, hosted zones, VPCs, IAM users, roles and policies, and CloudFront distributions; other `delete-` calls are not checked.
 
 #### Remote scripts
 
@@ -179,7 +181,7 @@ Apply to the Write, Edit, MultiEdit, NotebookEdit and Read tools, and to what a 
 | `workflow-edit` | ask | allow | allow | edits a CI workflow in .github/workflows |
 | `write-outside-project` | deny | ask | ask | writes outside the project and the temp folder |
 
-Secrets files: `.env` and `.env.*`, `*.env`, `*.pem`, `*.key`, `*.pfx`, `*.p12`, `id_rsa*`, `id_ed25519*` (also `id_ecdsa*`, `id_dsa*`), `credentials.json`, `secrets.*`, `.npmrc`, `.pypirc`, `.netrc`, `.git-credentials`, and files under `.ssh/`, `.gnupg/`, `~/.aws/credentials`, `~/.docker/config.json`, `~/.kube/config`. Templates are not secrets: `.env.example`, `.env.sample`, `.env.template`, `.env.dist` (and `secrets.example.yaml`), and neither is a public key (`*.pub`). Lockfiles: `package-lock.json`, `npm-shrinkwrap.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lockb`, `Cargo.lock`, `poetry.lock`, `Pipfile.lock`, `uv.lock`, `composer.lock`, `go.sum`, `packages.lock.json`, `Gemfile.lock`. Claude's own config folder (`~/.claude`: memory, plans, skills) is not "outside the project".
+Secrets files: `.env` and `.env.*`, `*.env`, `*.pem`, `*.key`, `*.pfx`, `*.p12`, `id_rsa*`, `id_ed25519*` (also `id_ecdsa*`, `id_dsa*`), `credentials.json`, `secrets.*`, `.npmrc`, `.pypirc`, `.netrc`, `.git-credentials`, and files under `.ssh/`, `.gnupg/`, `~/.aws/credentials`, `~/.docker/config.json`, `~/.kube/config`. Templates are not secrets: `.env.example`, `.env.sample`, `.env.template`, `.env.dist` (and `secrets.example.yaml`), and neither is a public key (`*.pub`) or `.ssh/known_hosts`. Lockfiles: `package-lock.json`, `npm-shrinkwrap.json`, `pnpm-lock.yaml`, `yarn.lock`, `bun.lockb`, `Cargo.lock`, `poetry.lock`, `Pipfile.lock`, `uv.lock`, `composer.lock`, `go.sum`, `packages.lock.json`, `Gemfile.lock`. Claude's own config folder (`~/.claude`: memory, plans, skills) is not "outside the project".
 
 #### Self-protection
 
@@ -220,7 +222,7 @@ Two optional files, both JSON:
 
 The `allow`, `deny` and `ask` lists of both files are joined. Each entry is a **rule id** (`git-reset-hard`) or a **regular expression** (case-sensitive, no flags; invalid ones are reported by `claude-guardrails status` and skipped):
 
-- For a command, a pattern is tested against each command segment, the text between `&&`, `;`, `|` and newlines, nested shells and substitutions included. For a file tool, against the path with forward slashes, and against the path relative to the project.
+- For a command, `deny` and `ask` patterns are tested against the whole command line and against each command segment (the text between `&&`, `;`, `|` and newlines, nested shells and substitutions included); `allow` only against a segment, as the next point says. For a file tool, a pattern is tested against the path with forward slashes, and against the path relative to the project.
 - `allow` is tested against the segment that tripped the rule, not the whole line. Allowing `git status` never unlocks `git status && git push --force origin main`.
 - `deny` and `ask` entries also stop commands that no built-in rule knows (`"deny": ["^make deploy"]` reports the rule `custom-deny`).
 - Order: a matching `deny` wins; else a matching `allow` lets the call through; else a matching `ask` raises the call to at least a prompt; else the preset decides.
@@ -253,8 +255,8 @@ claude-guardrails status
 - **The hook.** `guard.mjs` reads the event Claude Code sends on stdin (`tool_name`, `tool_input`, `cwd`), decides, and prints either nothing or `{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny"|"ask","permissionDecisionReason":"..."}}`. It never prints `allow`, because that would skip Claude Code's own permission prompts. The hook is registered in exec form (`node <path>`), so no shell runs and nothing needs quoting.
 - **A tokenizer, not a regular expression.** A command line is split at `&&`, `||`, `;`, `|`, `&` and newlines with quotes, escapes, comments, here-documents, redirections and `$( )` substitutions handled for Bash, PowerShell and `cmd.exe` separately. That is why `echo "rm -rf /"` and `git commit -m "never run rm -rf /"` pass: quoted text is data. `sudo`, `doas`, `env A=B`, `nohup`, `time`, `command`, `exec`, `nice`, `timeout`, `npx` and friends are stripped; `bash -c`, `sh -c`, `zsh -c`, `su -c`, `eval`, `ssh host "..."`, `wsl`, `cmd /c`, `powershell -Command` (and `-EncodedCommand`), `xargs`, `find -exec` and `find -delete`, scripts given to a shell on its stdin, and substitutions are read too, up to five levels deep.
 - **Paths are resolved, not matched.** `~`, `$HOME`, `%USERPROFILE%`, `$env:TEMP`, `.`, `..`, `/c/Users` (Git Bash), globs and brace lists are expanded where their value is known, then compared with the project folder, the temp folders, the home folder and the system folders, case-insensitively on Windows. The check is pure string work and never touches the file system.
-- **When git is started.** Only for `git commit` (the scan below), for a force push that names no branch (`git rev-parse --abbrev-ref HEAD`, 2 second limit) and, in `strict`, for a plain `git push` that names none. Nothing else, however many commands go by. A git that is missing or slow means "no answer" and the call goes through.
-- **The commit scan.** `git commit` reads `git diff --cached --no-color -U0` (5 second limit; 7 seconds for the whole scan) and looks at the added lines for the secret patterns of [claude-code-team-sync](https://github.com/nrzz/claude-code-team-sync) (Anthropic, OpenAI, GitHub, GitLab, Slack, AWS, Google, Stripe, npm, Hugging Face and SendGrid keys, JWTs, private keys, bearer tokens, passwords in URLs and connection strings, `*_SECRET=` style lines), without matching placeholders such as `changeme`, `${DB_PASSWORD}` or `<your-token>`, and for staged secrets files by name. In the same command line it also looks at what `git commit -a`, `git commit <paths>` and a preceding `git add -A`, `git add .` or `git add <paths>` are about to add, including untracked files. A block names the kind and the file, never the secret.
+- **When git is started.** Only for `git commit` (the scan below), for a force push that names no branch (`git rev-parse --abbrev-ref HEAD`, 2 second limit) and, in `strict`, for a plain `git push` that names none. Nothing else, however many commands go by. A git that is missing or slow means "no answer": the protected-branch check is skipped, though a force push that names no branch is still asked about in `strict` and `balanced`.
+- **The commit scan.** `git commit` reads `git diff --cached --no-color -U0` (5 second limit; 7 seconds for the whole scan) and looks at the added lines for the secret patterns of [claude-code-team-sync](https://github.com/nrzz/claude-code-team-sync) (Anthropic, OpenAI, GitHub, GitLab, Slack, AWS, Google, Stripe, npm, Hugging Face and SendGrid keys, JWTs, private keys, bearer tokens, passwords in URLs and connection strings, `*_SECRET=` style lines), without matching placeholders such as `changeme`, `${DB_PASSWORD}` or `<your-token>`, and for staged secrets files by name (except `.npmrc`, which projects often commit with registry settings: there only a token in it that matches a known pattern blocks the commit). In the same command line it also looks at what `git commit -a`, `git commit <paths>` and a preceding `git add -A`, `git add .` or `git add <paths>` are about to add, including untracked files. A block names the kind and the file, never the secret.
 - **Errors.** A hook never gets in the way of a session. Anything unexpected ends with no output and exit code 0, and one line (message and stack, never the command) in `<config folder>/claude-code-guardrails/errors.log`. `claude-guardrails status` shows the last one.
 
 ### What it does not catch
@@ -271,33 +273,35 @@ If the hook itself fails, the call goes through; that is the price of never gett
 
 ## What was verified, and how
 
-Checked on 2026-10-04 on Windows 11 with Node 24 and git 2.55, and in CI on Windows, macOS and Linux with Node 20, 22 and 24, all green:
+Checked on 2026-10-04 on Windows 11 with Node 24 and git 2.55, and in CI on Windows, macOS and Linux with Node 20, 22 and 24 and on Linux with Node 18, all green:
 
-- **981 automated tests** (`npm test`, Node's own runner, no dependencies). A table of 663 commands with the expected decision in each preset covers every rule and the tricky spellings: quoted text, `rm -rf ./build` and `node_modules`, nested `bash -c`, `sudo`/`env`/`nohup` prefixes, PowerShell and `cmd /c` spellings, `git push origin +main`, SQL in here-documents, `curl | sudo bash -`, here-strings, where a `cd` lasts, and command substitution inside unquoted here-documents. A second table does the same for about 150 file paths, Linux, macOS and Windows style (the checks are pure functions of a described machine, so every platform's paths are tested everywhere). A deterministic fuzz test makes 18,000 checks of random command lines and 16,000 of random paths: the engine must never throw and must always answer in the same short form.
+- **984 automated tests** (`npm test`, Node's own runner, no dependencies). A table of 669 commands with the expected decision in each preset covers every rule and the tricky spellings: quoted text, `rm -rf ./build` and `node_modules`, nested `bash -c`, `sudo`/`env`/`nohup` prefixes, PowerShell and `cmd /c` spellings, `git push origin +main`, SQL in here-documents, `curl | sudo bash -`, here-strings, where a `cd` lasts, and command substitution inside unquoted here-documents. A second table does the same for about 150 file paths, Linux, macOS and Windows style (the checks are pure functions of a described machine, so every platform's paths are tested everywhere). A deterministic fuzz test makes 18,000 checks of random command lines and 16,000 of random paths: the engine must never throw and must always answer in the same short form.
 - **Real git.** Force pushes are judged by the branch a throwaway repository is really on (main, a feature branch, a detached head, no repository); the commit scan runs against staged fake keys of every kind, staged `.env` files, `commit -a`, `git add -A && git commit`, untracked files, deleted `.env`, placeholders and large or binary files, and the tests count the git processes that get started (none for anything but those cases).
 - **The hook as Claude Code runs it.** `node guard.mjs` is started with the event on stdin and the exact JSON for a deny and an ask is compared byte for byte; an allowed call produces empty stdout, empty stderr and exit code 0; malformed, empty or unrelated input is ignored; a forced internal failure ends silently with one log line that does not contain the command; a 3 MB event is fine.
 - **Install and uninstall** in throwaway config folders and projects: backup byte for byte, the file's own indentation kept, other settings and other hooks untouched, a second `init` changes nothing and makes no backup, a stale entry of ours is replaced, invalid or oddly shaped `settings.json` is left alone with the snippet printed, `uninstall` restores exactly the settings that were there before, project scope vendors and removes the scripts.
 - **Not crying wolf.** 277 ordinary development commands (git, npm, docker, kubectl, psql, curl, tar, find, heredoc commit messages ...) pass in silence in every preset.
-- **Speed.** 1000 mixed command checks take about 25 ms and start no git process; the hook process starts in about 65 ms.
+- **Speed.** 1000 mixed command checks take about 25 ms and start no git process; the hook process starts in about 70 ms.
 - **Hostile input.** Deeply nested substitutions, 500 KB here-documents, 50,000 chained commands and brace bombs are read in milliseconds. Stress testing found one case that took 16 seconds (a long line that made a fork-bomb pattern quadratic); it is fixed, and the comment stripping for SQL was made linear at the same time.
-- **The manifests.** `claude plugin validate` passes (also with `--strict`) for `.claude-plugin/plugin.json`, for the marketplace (`.`) and for the skills folder, with Claude Code 2.1.286.
+- **The manifests.** `claude plugin validate` passes (also with `--strict`) for `.claude-plugin/plugin.json`, for the marketplace (`.`) and for the skills folder, with Claude Code 2.1.286 and 2.1.289, and the plugin installs from GitHub with `/plugin marketplace add nrzz/claude-code-guardrails` and `/plugin install guardrails@claude-code-guardrails` (checked on 2026-10-04).
 - **A slip of mine, and its fix.** While developing, a manual `status` run with a throwaway home folder searched for the project upwards, passed the temp folder and looked at the real `~/.claude` (it only checked for this tool's hook and printed nothing). The search now stops at the home and temp folders, that has a test, and every later run used `CLAUDE_PROJECT_DIR` and throwaway folders.
 
-Not verified: a live Claude Code session with the hook or the plugin loaded (the build session was not allowed to start one, so what Claude Code does with the `ask` and `deny` output is taken from its documented hook format and from `claude plugin validate`, not observed); the first `npx -y github:...` install from GitHub (it needs the repository to be published); Node 18 (the code avoids newer APIs but only Node 24 was run locally); macOS and Linux for real (their paths are simulated in the table tests, and CI runs the whole suite there).
+Since then, the [toolkit's end-to-end test](https://github.com/nrzz/claude-code-toolkit#tested-together) installs it with `npx -y github:nrzz/claude-code-guardrails init` on Windows, macOS and Linux and runs the hook the way Claude Code runs it, and the whole suite also passes on Node 18.
+
+Not verified: a live Claude Code session with the hook or the plugin loaded. What Claude Code does with the `ask` and `deny` output is taken from its documented hook format and from `claude plugin validate`, not observed.
 
 ## Files
 
 | Path | What it is |
 | --- | --- |
 | `guard.mjs` | The hook. Tiny: it calls `src/hook.mjs` |
-| `src/` | `shell.mjs` the tokenizer; `analyze.mjs` and `checks.mjs` the command analysis; `paths.mjs`, `files.mjs`, `secrets.mjs`, `gitutil.mjs`; `rules.mjs` the catalog; `config.mjs`, `decide.mjs`, `hook.mjs`; `install.mjs` and `cli.mjs` for the command line (the hook does not load these two) |
+| `src/` | `shell.mjs` the tokenizer; `analyze.mjs` and `checks.mjs` the command analysis; `args.mjs`, `paths.mjs`, `files.mjs`, `secrets.mjs`, `gitutil.mjs`, `fsutil.mjs`; `rules.mjs` the catalog; `config.mjs`, `decide.mjs`, `hook.mjs`; `meta.mjs` the name and version; `install.mjs` and `cli.mjs` for the command line (the hook does not load these two) |
 | `bin/claude-guardrails.mjs` | The command line |
 | `.claude-plugin/` | The plugin manifest and the marketplace that lists `guardrails` |
 | `hooks/hooks.json` | The plugin's hook registration |
 | `skills/` | `/guardrails:allow` and `/guardrails:status` |
 | `test/` | `npm test` |
 
-After `init`, a user has `~/.claude/claude-code-guardrails/` (the scripts and `errors.log`) and one entry in `~/.claude/settings.json`; a project has `.claude/guardrails/` and one entry in `.claude/settings.json`.
+After `init`, a user has `~/.claude/claude-code-guardrails/` (the scripts, and `errors.log` once the hook has ever failed) and one entry in `~/.claude/settings.json`; a project has `.claude/guardrails/` and one entry in `.claude/settings.json`.
 
 Related: [claude-code-team-sync](https://github.com/nrzz/claude-code-team-sync) shares sessions and context with your coworkers, [claude-code-handover](https://github.com/nrzz/claude-code-handover) keeps your own sessions short, and [claude-code-glow](https://github.com/nrzz/claude-code-glow) themes the interface.
 

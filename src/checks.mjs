@@ -351,7 +351,7 @@ export function checkPublish(c) {
       hit = v.includes("twine") && v[v.indexOf("twine") - 1] === "-m" && v.includes("upload");
       break;
     }
-    case "poetry": case "uv": case "flit": case "hatch": case "vsce": case "ovsx": hit = first(1)[0] === "publish"; break;
+    case "poetry": case "uv": case "flit": case "hatch": case "vsce": case "ovsx": hit = first(1)[0] === "publish" && !isDryRun(flags); break;
     case "gem": hit = first(1)[0] === "push"; break;
     case "gh": hit = first(1)[0] === "release" && first(2)[1] === "create"; break;
     case "docker": case "podman": case "docker-compose":

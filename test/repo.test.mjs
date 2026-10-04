@@ -34,7 +34,7 @@ function specifiers(text) {
 
 test("package.json: name, version, module type, bin, files, engines, scripts, links, license", () => {
   assert.equal(pkg.name, "claude-code-guardrails");
-  assert.equal(pkg.version, "1.0.0");
+  assert.equal(pkg.version, "1.0.1");
   assert.equal(pkg.version, VERSION, "src/meta.mjs VERSION matches (the vendored copy has no package.json)");
   assert.equal(NAME, pkg.name);
   assert.equal(pkg.type, "module");

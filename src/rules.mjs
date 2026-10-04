@@ -44,8 +44,8 @@ const TABLE = [
   ["terraform-auto-approve", [D, K, K], "Infrastructure", "terraform apply -auto-approve changes infrastructure without a review"],
   ["kubectl-delete", [D, K, K], "Infrastructure", "deletes Kubernetes resources"],
   ["helm-uninstall", [D, K, K], "Infrastructure", "uninstalls a Helm release"],
-  ["docker-prune", [D, K, K], "Infrastructure", "removes unused Docker images, containers or volumes (prune, compose down -v)"],
-  ["aws-destroy", [D, K, K], "Infrastructure", "deletes AWS resources (s3 rm --recursive, s3 rb, terminate, delete-*)"],
+  ["docker-prune", [D, K, K], "Infrastructure", "removes Docker volumes or every unused image (prune -a or --volumes, volume prune, compose down -v)"],
+  ["aws-destroy", [D, K, K], "Infrastructure", "deletes AWS resources (s3 rm --recursive, s3 rb, terminate-instances, delete-stack, delete-db-instance ...)"],
   ["gcloud-delete", [D, K, K], "Infrastructure", "deletes Google Cloud resources"],
   ["az-delete", [D, K, K], "Infrastructure", "deletes Azure resources"],
 

@@ -2,7 +2,7 @@
 // that init vendors into a project (which has no package.json next to it) can still report it.
 export const NAME = "claude-code-guardrails";
 export const BIN = "claude-guardrails";
-export const VERSION = "1.0.0";
+export const VERSION = "1.0.1";
 export const REPO_URL = "https://github.com/nrzz/claude-code-guardrails";
 
 // The tools the PreToolUse hook is registered for.
