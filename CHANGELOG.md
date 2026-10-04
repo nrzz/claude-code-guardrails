@@ -5,7 +5,7 @@ All notable changes to Claude Code guardrails are written here. The format follo
 ## [1.0.2] - 2026-10-04
 
 - The two skills pre-approve only guardrails' own command (`node ${CLAUDE_PLUGIN_ROOT}/bin/claude-guardrails.mjs ...`) instead of any `node` command, so while one of them runs, other Node code still asks first.
-- A listing icon, `.claude-plugin/icon.png`.
+- An icon for the plugin's listing in Anthropic's plugin directory.
 
 ## [1.0.1] - 2026-10-04
 
