@@ -34,7 +34,7 @@ function specifiers(text) {
 
 test("package.json: name, version, module type, bin, files, engines, scripts, links, license", () => {
   assert.equal(pkg.name, "claude-code-guardrails");
-  assert.equal(pkg.version, "1.0.1");
+  assert.equal(pkg.version, "1.0.2");
   assert.equal(pkg.version, VERSION, "src/meta.mjs VERSION matches (the vendored copy has no package.json)");
   assert.equal(NAME, pkg.name);
   assert.equal(pkg.type, "module");
@@ -155,6 +155,19 @@ test("skills are user-only, so they cost no tokens in Claude's skill list, and t
     assert.equal(get("disable-model-invocation"), "true", `${d}: disable-model-invocation`);
     assert.ok(get("description").length < 60, `${d}: description is ${get("description").length} characters`);
     assert.match(text, /\$\{CLAUDE_PLUGIN_ROOT\}\/bin\/claude-guardrails\.mjs/);
+  }
+});
+
+test("skills pre-approve only this plugin's own command, never any node command", () => {
+  const SCRIPT = "${CLAUDE_PLUGIN_ROOT}/bin/claude-guardrails.mjs";
+  for (const d of fs.readdirSync(path.join(ROOT, "skills"))) {
+    const text = read("skills", d, "SKILL.md");
+    const tools = /^allowed-tools: (.*)$/m.exec(text)[1];
+    const rules = tools.match(/Bash\([^)]*\)/g) || [];
+    assert.deepEqual(rules, [`Bash(node "${SCRIPT}" *)`, `Bash(node ${SCRIPT} *)`], `${d}: allowed-tools is ${tools}`);
+    assert.equal(tools.replace(/Bash\([^)]*\)/g, "").trim(), "", `${d}: no other tool is pre-approved`);
+    // Every command the skill runs is the plugin's own script, so the rules above cover it.
+    for (const [, cmd] of text.matchAll(/!`([^`]+)`/g)) assert.ok(cmd.startsWith(`node "${SCRIPT}" `), `${d}: ${cmd}`);
   }
 });
 

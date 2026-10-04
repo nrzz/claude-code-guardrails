@@ -2,7 +2,7 @@
 name: status
 description: Show the guardrails preset and where it is installed.
 disable-model-invocation: true
-allowed-tools: Bash(node *)
+allowed-tools: Bash(node "${CLAUDE_PLUGIN_ROOT}/bin/claude-guardrails.mjs" *) Bash(node ${CLAUDE_PLUGIN_ROOT}/bin/claude-guardrails.mjs *)
 ---
 
 !`node "${CLAUDE_PLUGIN_ROOT}/bin/claude-guardrails.mjs" status`
