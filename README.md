@@ -145,7 +145,7 @@ Only when the SQL is handed to a database client (`psql`, `mysql`, `sqlite3`, `s
 | --- | --- | --- | --- | --- |
 | `publish` | ask | ask | allow | publishes a package, release or image (npm, cargo, twine, gh release, docker push ...) |
 
-`npm`, `pnpm`, `yarn npm`, `bun`, `lerna`, `changeset publish`, `cargo`, `dotnet nuget push`, `twine upload`, `poetry`, `uv`, `flit`, `hatch`, `vsce`, `ovsx`, `gem push`, `gh release create`, `docker push`, `podman push`, `docker compose push` and `docker buildx build --push`. `--dry-run` is allowed for the tools that have one (npm, pnpm, yarn, bun, lerna, cargo, poetry, uv, flit, hatch, vsce, ovsx).
+`npm`, `pnpm`, `yarn npm`, `bun`, `lerna`, `changeset publish`, `cargo`, `dotnet nuget push`, `twine upload`, `poetry`, `uv`, `flit`, `hatch`, `vsce`, `ovsx`, `gem push`, `gh release create`, `docker push`, `podman push`, `docker compose push`, `docker buildx build --push`, `mix hex.publish`, `dart pub publish`, `flutter pub publish`, `mvn deploy` (and `./mvnw`), `gradle publish` (and `./gradlew`, `publishToMavenCentral`) and `helm push`. `--dry-run` is allowed for the tools that have one (npm, pnpm, yarn, bun, lerna, cargo, poetry, uv, flit, hatch, vsce, ovsx, mix, dart, flutter, gradle, helm).
 
 #### Infrastructure
 

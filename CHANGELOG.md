@@ -2,6 +2,10 @@
 
 All notable changes to Claude Code guardrails are written here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and versions follow [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+- The `publish` rule asks before `mix hex.publish`, `dart pub publish`, `flutter pub publish`, `mvn deploy` (and `./mvnw`), `gradle publish` (and `./gradlew`, `publishToMavenCentral`) and `helm push`. `--dry-run` remains allowed for tools that support it.
+
 ## [1.0.2] - 2026-10-04
 
 - The two skills pre-approve only guardrails' own command (`node ${CLAUDE_PLUGIN_ROOT}/bin/claude-guardrails.mjs ...`) instead of any `node` command, so while one of them runs, other Node code still asks first.
