@@ -360,9 +360,9 @@ export function checkPublish(c) {
       break;
     case "mix": hit = first(1)[0] === "hex.publish" && !isDryRun(flags); break;
     case "dart": case "flutter": hit = first(2)[0] === "pub" && first(2)[1] === "publish" && !isDryRun(flags); break;
-    case "mvn": case "mvnw": hit = hasPos(pos, "deploy") && !isDryRun(flags); break;
+    case "mvn": case "mvnw": hit = hasPos(pos, "deploy"); break;
     case "gradle": case "gradlew": hit = pos.some((w) => /^publish/i.test(w.value)) && !isDryRun(flags); break;
-    case "helm": hit = first(1)[0] === "push" && !isDryRun(flags); break;
+    case "helm": hit = first(1)[0] === "push"; break;
     default:
   }
   if (hit) a.add("publish", name, seg.text);

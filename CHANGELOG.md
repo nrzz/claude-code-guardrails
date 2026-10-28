@@ -4,7 +4,11 @@ All notable changes to Claude Code guardrails are written here. The format follo
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-28
+
 - The `publish` rule asks before `mix hex.publish`, `dart pub publish`, `flutter pub publish`, `mvn deploy` (and `./mvnw`), `gradle publish` (and `./gradlew`, `publishToMavenCentral`) and `helm push`. `--dry-run` remains allowed for tools that support it.
+- `helm push` and `mvn deploy` ask even when `--dry-run` is given: neither tool has that flag (it makes them fail, not skip the upload), so it is not treated as a dry run. The README lists `--dry-run` only for the tools that have it.
+- Contributed by [@yoreva-01](https://github.com/yoreva-01) in [#4](https://github.com/nrzz/claude-code-guardrails/pull/4), for the good first issue [#3](https://github.com/nrzz/claude-code-guardrails/issues/3).
 
 ## [1.0.2] - 2026-10-04
 
@@ -22,6 +26,7 @@ All notable changes to Claude Code guardrails are written here. The format follo
 
 - First release: a tokenizer for bash, PowerShell and cmd, rules for destructive deletes, force pushes, lost work, secrets in commits, SQL drops, publishing, infrastructure destroys, remote scripts, secrets files, lockfiles and writes outside the project; presets strict, balanced and relaxed; self-protection; project and user installs; a plugin.
 
+[1.1.0]: https://github.com/nrzz/claude-code-guardrails/compare/v1.0.2...v1.1.0
 [1.0.2]: https://github.com/nrzz/claude-code-guardrails/compare/v1.0.1...v1.0.2
 [1.0.1]: https://github.com/nrzz/claude-code-guardrails/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/nrzz/claude-code-guardrails/releases/tag/v1.0.0
