@@ -358,6 +358,11 @@ export function checkPublish(c) {
       hit = first(1)[0] === "push" || (first(1)[0] === "image" && first(2)[1] === "push") || (first(2).includes("compose") && first(3).includes("push"))
         || (longIs(flags, "--push") && hasPos(pos, "build", "buildx"));
       break;
+    case "mix": hit = first(1)[0] === "hex.publish" && !isDryRun(flags); break;
+    case "dart": case "flutter": hit = first(2)[0] === "pub" && first(2)[1] === "publish" && !isDryRun(flags); break;
+    case "mvn": case "mvnw": hit = hasPos(pos, "deploy") && !isDryRun(flags); break;
+    case "gradle": case "gradlew": hit = pos.some((w) => /^publish/i.test(w.value)) && !isDryRun(flags); break;
+    case "helm": hit = first(1)[0] === "push" && !isDryRun(flags); break;
     default:
   }
   if (hit) a.add("publish", name, seg.text);
@@ -709,5 +714,5 @@ export function genericChecks(c) {
 
 export const POWER_NAMES = ["shutdown", "reboot", "halt", "poweroff", "stop-computer", "restart-computer", "init", "telinit", "systemctl", "loginctl"];
 export const CHMOD_NAMES = ["chmod", "chown", "chgrp"];
-export const PUBLISH_NAMES = ["npm", "pnpm", "bun", "lerna", "changeset", "changesets", "yarn", "cargo", "dotnet", "nuget", "twine", "python", "python3", "py", "poetry", "uv", "flit", "hatch", "vsce", "ovsx", "gem", "gh", "docker", "podman", "docker-compose"];
+export const PUBLISH_NAMES = ["npm", "pnpm", "bun", "lerna", "changeset", "changesets", "yarn", "cargo", "dotnet", "nuget", "twine", "python", "python3", "py", "poetry", "uv", "flit", "hatch", "vsce", "ovsx", "gem", "gh", "docker", "podman", "docker-compose", "mix", "dart", "flutter", "mvn", "mvnw", "gradle", "gradlew", "helm"];
 export const INFRA_NAMES = [...TF_NAMES, "kubectl", "oc", "helm", "docker", "podman", "docker-compose", "aws", "gcloud", "az", "gsutil"];
